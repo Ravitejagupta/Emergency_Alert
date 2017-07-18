@@ -2,9 +2,9 @@ from flask import abort, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
 
 from . import admin
-from . forms import DepartmentForm, RoleForm, EmployeeAssignForm
+from . forms import DepartmentForm, RoleForm, EmployeeAssignForm, IssueForm
 from .. import db
-from ..models import Department,Employee, Role
+from ..models import Department,Employee,Role,Issue
 
 def check_admin():
     """
@@ -104,6 +104,97 @@ def delete_department(id):
 
     return render_template(title="Delete Department")
 
+#Issue Views
+
+@admin.route('/issues', methods=['GET', 'POST'])
+@login_required
+def list_issues():
+    """
+    List all issues
+    """
+    check_admin()
+
+    issues = Issue.query.all()
+
+    return render_template('admin/issues/issues.html',
+                           issues=issues, title="Issues")
+
+@admin.route('/issues/add', methods=['GET', 'POST'])
+@login_required
+def add_issue():
+    """
+    Add an issue to the database
+    """
+    check_admin()
+
+    add_issue = True
+
+    form = IssueForm()
+    if form.validate_on_submit():
+        issue = Issue(name=form.name.data)
+
+        try:
+            # add role to the database
+            db.session.add(issue)
+            db.session.commit()
+            flash('You have successfully added a new issue.')
+        except:
+            # in case role name already exists
+            flash('Error: issue name already exists.')
+
+        # redirect to the roles page
+        return redirect(url_for('admin.list_issues'))
+
+    # load role template
+    return render_template('admin/issues/issue.html', add_issue=add_issue,
+                           form=form, title='Add Issue')
+
+@admin.route('/issues/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_issue(id):
+    """
+    Edit an issue
+    """
+    check_admin()
+
+    add_issue = False
+    issue = Issue.query.get_or_404(id)
+    # role = Role.query.get_or_404(id)
+    form = IssueForm(obj=issue)
+    if form.validate_on_submit():
+        issue.name = form.name.data
+        # role.description = form.description.data
+        db.session.add(issue)
+        db.session.commit()
+        flash('You have successfully edited the issue.')
+
+        # redirect to the roles page
+        return redirect(url_for('admin.list_issues'))
+
+    # form.description.data = issue.description
+    form.name.data = issue.name
+    return render_template('admin/issues/issue.html', add_issue=add_issue,
+                           form=form, title="Edit Isssue")
+
+@admin.route('/issues/delete/<int:id>', methods=['GET', 'POST'])
+@login_required
+def delete_issue(id):
+    """
+    Delete a role from the database
+    """
+    check_admin()
+    issue = Issue.query.get_or_404(id)
+    # role = Role.query.get_or_404(id)
+    db.session.delete(issue)
+    db.session.commit()
+    flash('You have successfully deleted the issue.')
+
+    # redirect to the roles page
+    return redirect(url_for('admin.list_issues'))
+
+    return render_template(title="Delete Issue")
+
+
 # Role Views
 
 @admin.route('/roles')
@@ -116,6 +207,12 @@ def list_roles():
     roles = Role.query.all()
     return render_template('admin/roles/roles.html',
                            roles=roles, title='Roles')
+
+ # @auth.route('/login')
+ # @login_required
+ # def list_users():
+ #     check_admin()
+ #     users =
 
 @admin.route('/roles/add', methods=['GET', 'POST'])
 @login_required
@@ -202,7 +299,6 @@ def list_employees():
     List all employees
     """
     check_admin()
-
     employees = Employee.query.all()
     return render_template('admin/employees/employees.html',
                            employees=employees, title='Employees')

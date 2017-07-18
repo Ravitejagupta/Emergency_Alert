@@ -15,6 +15,11 @@ def homepage():
 def dashboard():
 	return render_template('home/dashboard.html', title="Dashboard")
 
+@home.route('/reportissue.html')
+@login_required
+def reportissue():
+	return render_template('home/reportissue.html', title = "Report an Issue")
+
 @home.route('/admin/dashboard')
 @login_required
 def admin_dashboard():

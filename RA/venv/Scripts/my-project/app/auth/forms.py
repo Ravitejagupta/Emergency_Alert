@@ -34,3 +34,9 @@ class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
+
+# class ReportIssue(FlaskForm):
+#     """
+#     Form for reporting an Issue
+#     """
+#     issue = StringField('Issue',validators = [DataRequired()])

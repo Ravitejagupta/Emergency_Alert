@@ -83,3 +83,30 @@ class Role(db.Model):
 
     def __repr__(self):
         return '<Role: {}>'.format(self.name)
+
+class Issue(db.Model):
+    """
+    Create an Issue table
+    """
+
+    __tablename__ = 'issues'
+    id = db.Column(db.Integer,primary_key = True)
+    name = db.Column(db.String(60),unique = True)
+
+    def __repr__(self):
+        return '<Issue: {}>'.format(self.name)
+
+# class SubIssue(db.Model):
+#     """
+#     Create a SubIssue table
+#     """
+#
+#     __tablename__ = 'subissues'
+#     id = db.Column(db.Integer,primary_key = True)
+#     issue_id = db.Column(db.Integer,db.ForeignKey(issues.id))
+#     name = db.Column(db.String(60),unique = True)
+#     issues = db.relationship('Issue', backref='subissue',
+#                                 lazy='dynamic')
+#
+#     def __repr__(self):
+#         return '<Role: {}>'.format(self.name)
