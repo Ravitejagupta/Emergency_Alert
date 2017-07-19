@@ -17,7 +17,6 @@ class IssueForm(FlaskForm):
     Form for admin to add or edit an issue
     """
     name = StringField('Name', validators=[DataRequired()])
-    # description = StringField('Description', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 class RoleForm(FlaskForm):
@@ -36,4 +35,11 @@ class EmployeeAssignForm(FlaskForm):
                                   get_label="name")
     role = QuerySelectField(query_factory=lambda: Role.query.all(),
                             get_label="name")
+    submit = SubmitField('Submit')
+
+class AddSubIssueForm(FlaskForm):
+    """
+    Form for admin to add sub issues
+    """
+    subissue = StringField('Name', validators=[DataRequired()])
     submit = SubmitField('Submit')

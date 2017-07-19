@@ -2,9 +2,9 @@ from flask import abort, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
 
 from . import admin
-from . forms import DepartmentForm, RoleForm, EmployeeAssignForm, IssueForm
+from . forms import DepartmentForm, RoleForm, EmployeeAssignForm, IssueForm, AddSubIssueForm
 from .. import db
-from ..models import Department,Employee,Role,Issue
+from ..models import Department,Employee,Role,Issue,SubIssue
 
 def check_admin():
     """
@@ -118,6 +118,36 @@ def list_issues():
 
     return render_template('admin/issues/issues.html',
                            issues=issues, title="Issues")
+
+@admin.route('/issues/addsubissue/<int:id>', methods = ['GET','POST'])
+@login_required
+def add_sub_issue(id):
+    """
+    Add a sub issue to an Issue
+    """
+    check_admin()
+
+    add_sub_issue = True
+
+    issue = Issue.query.get_or_404(id)
+
+    form = AddSubIssueForm()
+    if form.validate_on_submit():
+        subissue = SubIssue(name=form.subissue.data,issue_id=id)
+
+        try:
+            db.session.add(subissue)
+            db.session.commit()
+            flash('You have successfully added a subissue')
+        except:
+            flash('Error: issue name already exists.')
+
+        return redirect(url_for('admin.list_issues'))
+
+    return render_template('admin/issues/subissue.html',
+                           issue=issue,form = form,
+                           title='Add Sub Issue')
+
 
 @admin.route('/issues/add', methods=['GET', 'POST'])
 @login_required
@@ -302,6 +332,7 @@ def list_employees():
     employees = Employee.query.all()
     return render_template('admin/employees/employees.html',
                            employees=employees, title='Employees')
+
 
 @admin.route('/employees/assign/<int:id>', methods=['GET', 'POST'])
 @login_required

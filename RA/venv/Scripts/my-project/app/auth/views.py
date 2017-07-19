@@ -4,7 +4,7 @@ from flask_login import login_required, login_user, logout_user
 from . import auth
 from . forms import LoginForm, RegistrationForm
 from .. import db
-from ..models import Employee
+from ..models import Employee, Issue
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
@@ -60,6 +60,8 @@ def login():
 
     # load login template
     return render_template('auth/login.html', form=form, title='Login')
+
+
 
 @auth.route('/logout')
 @login_required

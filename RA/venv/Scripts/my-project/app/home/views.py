@@ -4,6 +4,9 @@ from flask import abort, render_template
 from flask_login import current_user, login_required
 
 from . import home
+from .. import db
+from ..models import Employee, Issue, SubIssue
+
 @home.route('/')
 def homepage():
 	print("home page")
@@ -15,10 +18,15 @@ def homepage():
 def dashboard():
 	return render_template('home/dashboard.html', title="Dashboard")
 
-@home.route('/reportissue.html')
+
+@home.route('/reportissue')
 @login_required
-def reportissue():
-	return render_template('home/reportissue.html', title = "Report an Issue")
+def list_user_issues():
+	issues = Issue.query.all()
+	subissues = SubIssue.query.all()
+	return render_template('home/reportissue.html',issues = issues,subissues = subissues, title = "Report an Issue")
+
+
 
 @home.route('/admin/dashboard')
 @login_required

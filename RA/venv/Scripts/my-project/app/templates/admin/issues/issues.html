@@ -17,10 +17,9 @@
               <thead>
                 <tr>
                   <th width="15%"> Name </th>
-                  <!-- <th width="40%"> Description </th> -->
-                  <!-- <th width="15%"> Employee Count </th> -->
                   <th width="15%"> Edit </th>
                   <th width="15%"> Delete </th>
+                  <th width="15%"> Add Sub issue </th>
                 </tr>
               </thead>
               <tbody>
@@ -35,6 +34,11 @@
                   <td>
                     <a href="{{ url_for('admin.delete_issue', id=issue.id) }}">
                       <i class="fa fa-trash"></i> Delete
+                    </a>
+                  </td>
+                  <td>
+                    <a href="{{ url_for('admin.add_sub_issue', id=issue.id) }}">
+                      <i class="fa fa-trash"></i> Add
                     </a>
                   </td>
                 </tr>
@@ -52,10 +56,7 @@
             <i class="fa fa-plus"></i>
             Add Issue
           </a>
-          <a href="{{ url_for('admin.add_issue') }}" class="btn btn-default btn-lg">
-            <i class="fa fa-plus"></i>
-            Add Sub Issue
-          </a>
+
         </div>
       </div>
     </div>

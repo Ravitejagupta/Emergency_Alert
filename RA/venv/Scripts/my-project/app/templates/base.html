@@ -29,6 +29,7 @@
         <li><a href="{{ url_for('admin.list_issues') }}">Issues</a></li>
       {% else %}
         <li><a href="{{ url_for('home.dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('home.list_user_issues') }}">Report an Issue</a></li>
       {% endif %}
       <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
       <li><a><i class="fa fa-user"></i>  Hi, {{ current_user.username }}!</a></li>
