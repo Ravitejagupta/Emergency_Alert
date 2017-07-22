@@ -105,3 +105,17 @@ class SubIssue(db.Model):
 
     def __repr__(self):
         return '<SubIssue: {}>'.format(self.name)
+
+class Queries(db.Model):
+    """
+    Create a Query Table
+    """
+    __tablename__ = 'queries'
+    id = db.Column(db.Integer,primary_key = True)
+    employee_id = db.Column(db.Integer,db.ForeignKey('employees.id'))
+    issue_id = db.Column(db.Integer,db.ForeignKey('issues.id'))
+    subissue_id = db.Column(db.Integer,db.ForeignKey('subissues.id'))
+    is_admin = db.Column(db.Boolean, default=False)
+
+    def __repr__(self):
+        return '<Query: {} {}>'.format(self.issue_name,self.subissue_name)

@@ -16,31 +16,14 @@
           <div class="center">
             <table class="table table-striped table-bordered">
               <thead>
-                <tr>
-                  <th width="15%"> Select an Issue </th>
-                </tr>
               </thead>
               <tbody>
-                <tr><td>
-                <select>
-              {% for issue in issues %}
-                <option>{{ issue.name }}</option>
-              {% endfor %}
-              </select>
-             </td></tr>
-             <tr><td>
-             <select>
-           {% for subissue in subissues %}
-             <option>{{ subissue.name }}</option>
-           {% endfor %}
-           </select>
-          </td></tr>
               </tbody>
             </table>
-          </div>
         {% endif %}
         <br/>
-
+{{ wtf.quick_form(form) }}
+          </div>
         </div>
       </div>
     </div>

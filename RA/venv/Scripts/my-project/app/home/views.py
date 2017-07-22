@@ -4,6 +4,7 @@ from flask import abort, render_template
 from flask_login import current_user, login_required
 
 from . import home
+from . forms import IssueForm
 from .. import db
 from ..models import Employee, Issue, SubIssue
 
@@ -19,12 +20,13 @@ def dashboard():
 	return render_template('home/dashboard.html', title="Dashboard")
 
 
-@home.route('/reportissue')
+@home.route('/reportissue',methods=['GET', 'POST'])
 @login_required
 def list_user_issues():
 	issues = Issue.query.all()
 	subissues = SubIssue.query.all()
-	return render_template('home/reportissue.html',issues = issues,subissues = subissues, title = "Report an Issue")
+	form = IssueForm()
+	return render_template('home/reportissue.html',issues = issues,subissues = subissues,form = form, title = "Report an Issue")
 
 
 
