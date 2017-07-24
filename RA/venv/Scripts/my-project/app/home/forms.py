@@ -12,7 +12,15 @@ class IssueForm(FlaskForm):
     name = QuerySelectField(query_factory=lambda: Issue.query.all(),
                                   get_label="name")
     # description = StringField('Description', validators=[DataRequired()])
-    SubIssue = QuerySelectField(query_factory=lambda: SubIssue.query.all(),
+    subissue = QuerySelectField(query_factory=lambda: SubIssue.query.all(),
                                   get_label="name")
 
     submit = SubmitField('Submit')
+
+
+class QueryForm(FlaskForm):
+    """
+    List all Queries.
+    """
+    query_name = QuerySelectField(query_factory=lambda: Query.query.all(),
+                                  get_label="name")

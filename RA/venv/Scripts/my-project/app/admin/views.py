@@ -164,7 +164,7 @@ def add_issue():
         issue = Issue(name=form.name.data)
 
         try:
-            # add role to the database
+            # add issue to the database
             db.session.add(issue)
             db.session.commit()
             flash('You have successfully added a new issue.')
