@@ -37,6 +37,14 @@
                       <td>
                           {{ query.subissue.name }}
                       </td>
+                      <td>
+                          <a href="{{ url_for('home.delete_query', id=query.id) }}">
+                            <i class="fa fa-user-plus"></i> Delete
+                          </a> <span> / </span>
+                          <a href="{{ url_for('home.verify_query', id=query.id) }}">
+                            <i class="fa fa-user-plus"></i> Verify
+                          </a>
+                        </td>
                     </tr>
 
               {% endfor %}
