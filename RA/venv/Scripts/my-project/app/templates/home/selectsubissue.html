@@ -1,0 +1,33 @@
+{% import "bootstrap/utils.html" as utils %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% extends "base.html" %}
+{% block title %}Select Sub Issue{% endblock %}
+{% block body %}
+<div class="content-section">
+  <div class="outer">
+    <div class="middle">
+      <div class="inner">
+        <br/>
+        {{ utils.flashed_messages() }}
+        <br/>
+        <h1 style="text-align:center;">Report an Issue</h1>
+        <h3 style="text-align:center;">Select Sub Issue</h3>
+        {% if subissues %}
+          <hr class="intro-divider">
+          <div class="center">
+            <table class="table table-striped table-bordered">
+              <thead>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+        {% endif %}
+        <br/>
+{{ wtf.quick_form(form) }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

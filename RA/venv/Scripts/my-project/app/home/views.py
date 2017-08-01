@@ -7,7 +7,7 @@ from flask import abort, flash, redirect, render_template, url_for, request
 from flask_login import current_user, login_required
 
 from . import home
-from . forms import IssueForm, QueryForm
+from . forms import IssueForm, QueryForm, SubIssueForm
 from .. import db
 from ..models import Employee, Issue, SubIssue, Query
 
@@ -29,20 +29,42 @@ def list_user_issues():
 	issues = Issue.query.all()
 	subissues = SubIssue.query.all()
 	form = IssueForm()
-	if form.validate_on_submit():
-		issue = request.form['name']
-		# issue = Issue.query.filter(Issue.id == form.name.data.value).all()
-		subissue = request.form['subissue']
-		query = Query(employee_id=current_user.id, issue_id =issue, subissue_id = subissue)
-		try:
-			db.session.add(query)
-			db.session.commit()
-			flash('You have successfully added a query')
-		except:
-			flash('Error: Query already exists.')
+	form.name.choices = [(issue.id,issue.name) for issue in issues]
+	print("before")
+	print(form.name.data)
+	# if (form.validate_on_submit()):
+	if (form.name.data is None):
+		print("Hello")
+		issue_id = form.name.data
+		print(form.name.data)
+		# print(int(issue_id))
+		# issue_id = int(form.name.data)
+		# print(form.name.data)
+		return redirect(url_for('home.select_sub_issue', id=issue_id))
+
+		# subissue = request.form['subissue']
+		# additional_info = form.additional_info.data
+		# location = form.location.data
+		# query = Query(employee_id=current_user.id, issue_id =issue, subissue_id = subissue, additional_info = additional_info, location = location)
+		# try:
+		# 	db.session.add(query)
+		# 	db.session.commit()
+		# 	flash('You have successfully added a query')
+		# except:
+		# 	flash('Error: Query already exists.')
+		# return redirect(url_for('home.select_sub_issue', id=20))
 
 	return render_template('home/reportissue.html',issues = issues,subissues = subissues,form = form, title = "Report an Issue")
 
+
+@home.route('/reportissue/selectsubissue/<string:id>',methods=['GET', 'POST'])
+@login_required
+def select_sub_issue(id):
+	subissues = SubIssue.query.filter_by(issue_id = id)
+	form = SubIssueForm()
+	print(id)
+	form.subissue.query = subissues
+	return render_template('home/selectsubissue.html',subissues = subissues,form = form, title = "Select Sub Issue")
 
 @home.route('/admin/dashboard')
 @login_required
@@ -56,7 +78,7 @@ def admin_dashboard():
 	return render_template('home/admin_dashboard.html',form = form, queries = queries, title="Admin Dashboard")
 
 
-#delet a query
+#delete a query
 @home.route('/queries/delete/<int:id>', methods = ['GET','POST'])
 @login_required
 def delete_query(id):
@@ -81,16 +103,19 @@ def verify_query(id):
 	"""
 	# check_admin()
 	verified_query = Query.query.get_or_404(id)
+	print(id)
+	print(verified_query)
 	verified_query_details = []
 	# for k in verified_query:
 	# 	verified_query_details.append(k)
-	verified_query_tuple = (verified_query.employee.username, verified_query.issue.name, verified_query.subissue.name )
-	verified_query_details.append(verified_query_tuple)
+	# verified_query_tuple = (str(verified_query.employee.username), str(verified_query.issue.name), str(verified_query.subissue.name) )
+	# verified_query_details.append(verified_query_tuple)
 
 	j = json.dumps(verified_query_details)
 	verified_query_details_file = 'verified_query_details_file.js'
-	f = open(verified_query_details_file,'w')
-	print(f,verified_query_details)
+	text_file = 'text_file.txt'
+	f = open(text_file,'w')
+	print(f,str(verified_query.employee.username))
 
 
 	return redirect(url_for('home.admin_dashboard'))

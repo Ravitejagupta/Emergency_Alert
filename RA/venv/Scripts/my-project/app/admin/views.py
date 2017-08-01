@@ -1,4 +1,4 @@
-from flask import abort, flash, redirect, render_template, url_for
+from flask import abort, flash, redirect, render_template, url_for, request
 from flask_login import current_user, login_required
 
 from . import admin
@@ -130,6 +130,10 @@ def add_sub_issue(id):
     add_sub_issue = True
 
     issue = Issue.query.get_or_404(id)
+    subissues = SubIssue.query.filter_by(issue_id = id).all()
+
+    for subissue in subissues:
+        print(subissue.name)
 
     form = AddSubIssueForm()
     if form.validate_on_submit():
@@ -142,12 +146,30 @@ def add_sub_issue(id):
         except:
             flash('Error: issue name already exists.')
 
-        return redirect(url_for('admin.list_issues'))
+        return redirect(url_for('admin.add_sub_issue',id =id))
 
     return render_template('admin/issues/subissue.html',
-                           issue=issue,form = form,
+                           issue=issue, subissues = subissues, form = form,
                            title='Add Sub Issue')
 
+@admin.route('/subissues/delete/<int:id>', methods=['GET', 'POST'])
+@login_required
+def delete_sub_issue(id):
+    """
+    Delete a subissue from the database
+    """
+    check_admin()
+    subissue = SubIssue.query.get_or_404(id)
+    issue_id = subissue.issue_id
+    db.session.delete(subissue)
+    db.session.commit()
+    flash('You have successfully deleted the subissue.')
+    # issue_id = request.args['id']
+    return redirect(url_for('admin.add_sub_issue',id = issue_id))
+
+    # return render_template('admin/issues/subissue.html',
+    #                        issue=issue, subissues = subissues, form = form,
+    #                        title='Add Sub Issue')
 
 @admin.route('/issues/add', methods=['GET', 'POST'])
 @login_required
@@ -214,15 +236,18 @@ def delete_issue(id):
     """
     check_admin()
     issue = Issue.query.get_or_404(id)
+    subissue = SubIssue.query.filter_by(issue_id = id)
+    print(subissue)
     # role = Role.query.get_or_404(id)
     db.session.delete(issue)
+    # db.session.delete(subissue)
     db.session.commit()
     flash('You have successfully deleted the issue.')
 
     # redirect to the roles page
     return redirect(url_for('admin.list_issues'))
 
-    return render_template(title="Delete Issue")
+    # return render_template(title="Delete Issue")
 
 
 # Role Views

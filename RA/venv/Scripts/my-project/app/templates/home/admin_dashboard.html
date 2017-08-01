@@ -22,15 +22,17 @@
               <thead>
                 <tr>
                   <th width="15%"> Name </th>
-                  <th width="30%"> Issue </th>
-                  <th width="30%"> SubIssue </th>
-                  <th width="30%"> Action </th>
+                  <th width="15%"> Issue </th>
+                  <th width="15%"> SubIssue </th>
+                  <th width="25%"> Additional Info </th>
+                  <th width="25%"> Location </th>
+                  <th width="40%"> Action </th>
                 </tr>
               </thead>
               <tbody>
               {% for query in queries %}
                     <tr>
-                      <td> {{ query.employee.username }}</td>
+                      <td> {{ query.employee.first_name }} {{ query.employee.last_name }}</td>
                       <td>
                           {{ query.issue.name }}
                       </td>
@@ -38,12 +40,14 @@
                           {{ query.subissue.name }}
                       </td>
                       <td>
+                          {{ query.additional_info }}
+                      </td>
+                      <td>
+                          {{ query.location }}
+                      </td>
+                      <td>
                           <a href="{{ url_for('home.delete_query', id=query.id) }}">
-                            <i class="fa fa-user-plus"></i> Delete
-                          </a> <span> / </span>
-                          <a href="{{ url_for('home.verify_query', id=query.id) }}">
-                            <i class="fa fa-user-plus"></i> Verify
-                          </a>
+                            <i class="fa fa-user-plus"></i> Delete</a> <a href="{{ url_for('home.verify_query', id=query.id) }}"><i class="fa fa-user-plus"></i> Verify</a>
                         </td>
                     </tr>
 

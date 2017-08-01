@@ -9,8 +9,28 @@
         <div class="center">
             <h1> Add Sub Issues </h1>
             <br/>
+              <table class="table table-striped table-bordered">
+                <thead>
+                  <tr>
+                    <th width="15%"> Name </th>
+                    <th width="15%"> Delete </th>
+                  </tr>
+                </thead>
+                <tbody>
+                {% for subissue in subissues %}
+                  <tr>
+                    <td> {{ subissue.name }} </td>
+                    <td>
+                      <a href="{{ url_for('admin.delete_sub_issue', id=subissue.id) }}">
+                        <i class="fa fa-trash"></i> Delete
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
             <p>
-                Assign Sub Issue to
+                Add Sub Issue to
                 <span style="color: #ea511e;">
                     {{ issue.name }}
                 </span>
