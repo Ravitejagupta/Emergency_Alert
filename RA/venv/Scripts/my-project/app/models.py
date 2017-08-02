@@ -1,5 +1,5 @@
 # app/models.py
-
+from firebase import firebase
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -108,7 +108,7 @@ class SubIssue(db.Model):
     queries = db.relationship('Query', backref='subissue',lazy='dynamic')
 
     def __repr__(self):
-        return '<SubIssue: {}>'.format(self.name)
+        return '{}'.format(self.name)
 
 class Query(db.Model):
     """
@@ -121,6 +121,7 @@ class Query(db.Model):
     subissue_id = db.Column(db.Integer,db.ForeignKey('subissues.id'))
     additional_info = db.Column(db.String(100))
     location =  db.Column(db.String(100))
+    phone = db.Column(db.String(15))
     is_admin = db.Column(db.Boolean, default=False)
 
     def __repr__(self):

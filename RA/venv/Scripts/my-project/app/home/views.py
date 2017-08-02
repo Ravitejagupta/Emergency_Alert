@@ -3,6 +3,7 @@ import pyodbc
 import json
 import collections
 
+from firebase import firebase
 from flask import abort, flash, redirect, render_template, url_for, request
 from flask_login import current_user, login_required
 
@@ -10,6 +11,9 @@ from . import home
 from . forms import IssueForm, QueryForm, SubIssueForm
 from .. import db
 from ..models import Employee, Issue, SubIssue, Query
+
+firebaseget = firebase.FirebaseApplication('https://eager-621db.firebaseio.com/Reports/')
+firebasepost = firebase.FirebaseApplication('https://eager-621db.firebaseio.com/VerifiedReports/')
 
 @home.route('/')
 def homepage():
@@ -30,16 +34,10 @@ def list_user_issues():
 	subissues = SubIssue.query.all()
 	form = IssueForm()
 	form.name.choices = [(issue.id,issue.name) for issue in issues]
-	print("before")
-	print(form.name.data)
-	# if (form.validate_on_submit()):
-	if (form.name.data is None):
-		print("Hello")
+
+	if (form.name.data != "None"):
 		issue_id = form.name.data
-		print(form.name.data)
-		# print(int(issue_id))
-		# issue_id = int(form.name.data)
-		# print(form.name.data)
+
 		return redirect(url_for('home.select_sub_issue', id=issue_id))
 
 		# subissue = request.form['subissue']
@@ -62,8 +60,26 @@ def list_user_issues():
 def select_sub_issue(id):
 	subissues = SubIssue.query.filter_by(issue_id = id)
 	form = SubIssueForm()
-	print(id)
 	form.subissue.query = subissues
+	form.subissue.choices = [(subissue.id,subissue.name) for subissue in subissues]
+	# if form.validate_on_submit():
+	if (form.subissue.data != "None"):
+		subissue = request.form['subissue']
+		subissue_id = form.subissue.data
+		print(subissue_id,subissue)
+		additional_info = form.additional_info.data
+		location = form.location.data
+		phone = form.phone.data
+		query = Query(employee_id=current_user.id, issue_id =id, subissue_id = subissue_id, additional_info = additional_info, location = location, phone = phone)
+		try:
+			db.session.add(query)
+			db.session.commit()
+			flash('You have successfully added a query')
+		except:
+			flash('Error: Query already exists.')
+
+		return redirect(url_for('home.list_user_issues'))
+
 	return render_template('home/selectsubissue.html',subissues = subissues,form = form, title = "Select Sub Issue")
 
 @home.route('/admin/dashboard')
@@ -103,19 +119,6 @@ def verify_query(id):
 	"""
 	# check_admin()
 	verified_query = Query.query.get_or_404(id)
-	print(id)
-	print(verified_query)
-	verified_query_details = []
-	# for k in verified_query:
-	# 	verified_query_details.append(k)
-	# verified_query_tuple = (str(verified_query.employee.username), str(verified_query.issue.name), str(verified_query.subissue.name) )
-	# verified_query_details.append(verified_query_tuple)
-
-	j = json.dumps(verified_query_details)
-	verified_query_details_file = 'verified_query_details_file.js'
-	text_file = 'text_file.txt'
-	f = open(text_file,'w')
-	print(f,str(verified_query.employee.username))
-
+	post = firebasepost.post('/VerifiedReports',{verified_query.issue.name:{0:verified_query.subissue.name, 1:"Additional Info: " + verified_query.additional_info},'phone':verified_query.phone,'latitude':verified_query.location.split(',')[0],'longitude':verified_query.location.split(',')[1]})
 
 	return redirect(url_for('home.admin_dashboard'))

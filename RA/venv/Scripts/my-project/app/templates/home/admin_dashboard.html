@@ -24,9 +24,10 @@
                   <th width="15%"> Name </th>
                   <th width="15%"> Issue </th>
                   <th width="15%"> SubIssue </th>
-                  <th width="25%"> Additional Info </th>
+                  <th width="15%"> Additional Info </th>
                   <th width="25%"> Location </th>
-                  <th width="40%"> Action </th>
+                  <th width="25%"> Phone </th>
+                  <th width="25%"> Action </th>
                 </tr>
               </thead>
               <tbody>
@@ -44,6 +45,9 @@
                       </td>
                       <td>
                           {{ query.location }}
+                      </td>
+                      <td>
+                          {{ query.phone }}
                       </td>
                       <td>
                           <a href="{{ url_for('home.delete_query', id=query.id) }}">

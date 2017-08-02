@@ -27,9 +27,12 @@ class SubIssueForm(FlaskForm):
     """
     List all sub issues in next page.
     """
-    subissue = QuerySelectField('name')
+    subissue = RadioField('Sub Issue', choices = [])
 
     additional_info = StringField('Additional info')
+
     location = StringField('Location')
+
+    phone = StringField('Phone')
 
     submit = SubmitField('Submit')
