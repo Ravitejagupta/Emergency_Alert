@@ -17,17 +17,18 @@
         <h1 style="text-align:center;">Queries</h1>
         {% if queries %}
           <hr class="intro-divider">
-          <div class="center">
+
             <table class="table table-striped table-bordered">
               <thead>
                 <tr>
-                  <th width="15%"> Name </th>
-                  <th width="15%"> Issue </th>
+                  <th width="10%"> Name </th>
+                  <th width="10%"> Issue </th>
                   <th width="15%"> SubIssue </th>
                   <th width="15%"> Additional Info </th>
-                  <th width="25%"> Location </th>
-                  <th width="25%"> Phone </th>
-                  <th width="25%"> Action </th>
+                  <th width="15%"> Location </th>
+                  <th width="15%"> Phone </th>
+                  <th width="10%"> Zip Code </th>
+                  <th width="10%"> Action </th>
                 </tr>
               </thead>
               <tbody>
@@ -50,15 +51,18 @@
                           {{ query.phone }}
                       </td>
                       <td>
+                          {{ query.zip_code }}
+                      </td>
+                      <td>
                           <a href="{{ url_for('home.delete_query', id=query.id) }}">
-                            <i class="fa fa-user-plus"></i> Delete</a> <a href="{{ url_for('home.verify_query', id=query.id) }}"><i class="fa fa-user-plus"></i> Verify</a>
+                            <i class="fa fa-user-plus"></i> Delete</a> / <a href="{{ url_for('home.verify_query', id=query.id) }}"><i class="fa fa-user-plus"></i> Verify</a>
                         </td>
                     </tr>
 
               {% endfor %}
               </tbody>
             </table>
-          </div>
+
 {% endif %}
         </div>
       </div>

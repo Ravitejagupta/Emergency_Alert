@@ -6,7 +6,7 @@
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
     <script>
-      
+
     </script>
 </head>
 <body>
@@ -41,6 +41,13 @@
       <li><a href="{{ url_for('auth.register') }}">Register</a></li>
       <li><a href="{{ url_for('auth.login') }}">Login</a></li>
     {% endif %}
+</ul>
+<ul class="nav navbar-nav navbar-left">
+  {% if current_user.is_authenticated %}
+  {% if not current_user.is_admin %}
+  <li><a href="{{ url_for('home.subscribe') }}">Subscribe</a></li>
+  {% endif %}
+  {% endif %}
 </ul>
 
           </div>

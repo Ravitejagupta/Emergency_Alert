@@ -2,6 +2,8 @@
 import pyodbc
 import json
 import collections
+import requests
+import json
 
 from firebase import firebase
 from flask import abort, flash, redirect, render_template, url_for, request
@@ -19,12 +21,14 @@ firebasepost = firebase.FirebaseApplication('https://eager-621db.firebaseio.com/
 def homepage():
 	print("home page")
 	return render_template('home/index.html', title="Welcome")
-	#return "hello wirld"
 
 @home.route('/dashboard')
 @login_required
 def dashboard():
-	return render_template('home/dashboard.html', title="Dashboard")
+
+	queries = Query.query.filter_by(is_admin = True)
+	form = QueryForm()
+	return render_template('home/dashboard.html', queries = queries, title="Dashboard")
 
 
 @home.route('/reportissue',methods=['GET', 'POST'])
@@ -40,18 +44,6 @@ def list_user_issues():
 
 		return redirect(url_for('home.select_sub_issue', id=issue_id))
 
-		# subissue = request.form['subissue']
-		# additional_info = form.additional_info.data
-		# location = form.location.data
-		# query = Query(employee_id=current_user.id, issue_id =issue, subissue_id = subissue, additional_info = additional_info, location = location)
-		# try:
-		# 	db.session.add(query)
-		# 	db.session.commit()
-		# 	flash('You have successfully added a query')
-		# except:
-		# 	flash('Error: Query already exists.')
-		# return redirect(url_for('home.select_sub_issue', id=20))
-
 	return render_template('home/reportissue.html',issues = issues,subissues = subissues,form = form, title = "Report an Issue")
 
 
@@ -62,15 +54,19 @@ def select_sub_issue(id):
 	form = SubIssueForm()
 	form.subissue.query = subissues
 	form.subissue.choices = [(subissue.id,subissue.name) for subissue in subissues]
-	# if form.validate_on_submit():
 	if (form.subissue.data != "None"):
 		subissue = request.form['subissue']
 		subissue_id = form.subissue.data
 		print(subissue_id,subissue)
 		additional_info = form.additional_info.data
-		location = form.location.data
+		send_url = 'http://freegeoip.net/json'
+		r = requests.get(send_url)
+		j = json.loads(r.text)
+		lat = j['latitude']
+		lon = j['longitude']
+		location = str(lat) + "," + str(lon)
 		phone = form.phone.data
-		query = Query(employee_id=current_user.id, issue_id =id, subissue_id = subissue_id, additional_info = additional_info, location = location, phone = phone)
+		query = Query(employee_id=current_user.id, issue_id =id, subissue_id = subissue_id, additional_info = additional_info, location = location, phone = phone, zip_code = j['zip_code'])
 		try:
 			db.session.add(query)
 			db.session.commit()
@@ -90,6 +86,8 @@ def admin_dashboard():
 #     abort(403)
 
 	queries = Query.query.all()
+	for q in queries:
+		print(type(q))
 	form = QueryForm()
 	return render_template('home/admin_dashboard.html',form = form, queries = queries, title="Admin Dashboard")
 
@@ -119,6 +117,21 @@ def verify_query(id):
 	"""
 	# check_admin()
 	verified_query = Query.query.get_or_404(id)
+	verified_query.is_admin = True
+	db.session.commit()
 	post = firebasepost.post('/VerifiedReports',{verified_query.issue.name:{0:verified_query.subissue.name, 1:"Additional Info: " + verified_query.additional_info},'phone':verified_query.phone,'latitude':verified_query.location.split(',')[0],'longitude':verified_query.location.split(',')[1]})
 
 	return redirect(url_for('home.admin_dashboard'))
+
+@home.route('/subscribe',methods=['GET', 'POST'])
+@login_required
+def subscribe():
+	"""
+	subscribe
+	"""
+	send_url = 'http://freegeoip.net/json'
+	r = requests.get(send_url)
+	j = json.loads(r.text)
+	flash('Subscribed successfully')
+	post = firebasepost.post('/notificationRequests',{'user':current_user.username,'zip code':j['zip_code']})
+	return render_template('home/dashboard.html', title="Dashboard")

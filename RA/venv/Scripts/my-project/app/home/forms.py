@@ -31,7 +31,7 @@ class SubIssueForm(FlaskForm):
 
     additional_info = StringField('Additional info')
 
-    location = StringField('Location')
+    # location = StringField('Location')
 
     phone = StringField('Phone')
 

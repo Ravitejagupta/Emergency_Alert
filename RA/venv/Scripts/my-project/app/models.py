@@ -122,6 +122,7 @@ class Query(db.Model):
     additional_info = db.Column(db.String(100))
     location =  db.Column(db.String(100))
     phone = db.Column(db.String(15))
+    zip_code = db.Column(db.String(10))
     is_admin = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
