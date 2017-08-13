@@ -4,6 +4,15 @@ import json
 import collections
 import requests
 import json
+import phonenumbers
+from phonenumbers import carrier
+from phonenumbers.phonenumberutil import number_type
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn import datasets
+from mpl_toolkits.mplot3d import Axes3D
+import pandas as pd
 
 from firebase import firebase
 from flask import abort, flash, redirect, render_template, url_for, request
@@ -66,29 +75,105 @@ def select_sub_issue(id):
 		lon = j['longitude']
 		location = str(lat) + "," + str(lon)
 		phone = form.phone.data
-		query = Query(employee_id=current_user.id, issue_id =id, subissue_id = subissue_id, additional_info = additional_info, location = location, phone = phone, zip_code = j['zip_code'])
-		try:
-			db.session.add(query)
-			db.session.commit()
-			flash('You have successfully added a query')
-		except:
-			flash('Error: Query already exists.')
+		if(carrier._is_mobile(number_type(phonenumbers.parse(phone)))):
+			query = Query(employee_id=current_user.id, issue_id =id, subissue_id = subissue_id, additional_info = additional_info, location = location, phone = phone, zip_code = j['zip_code'])
+			try:
+				db.session.add(query)
+				db.session.commit()
+				flash('You have successfully added a query')
+			except:
+				flash('Error: Query already exists.')
+		else:
+			flash('Please enter a valid contact number')
 
 		return redirect(url_for('home.list_user_issues'))
 
 	return render_template('home/selectsubissue.html',subissues = subissues,form = form, title = "Select Sub Issue")
 
+
 @home.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
-# prevent non-admins from accessing the page
-# if not current_user.is_admin:
-#     abort(403)
-
+	dataset = []
+	allData = []
+	header = ['User_id', 'Issue_id', 'latitude', 'longitude', 'zip_code']
+	row = []
 	queries = Query.query.all()
 	for q in queries:
-		print(type(q))
+		row.append(q.location.split(',')[0])
+		row.append(q.location.split(',')[1])
+		row.append(q.zip_code)
+		dataset.append([float(x) for x in row])
+		row = []
+
+	for q in queries:
+		row.append(q.issue_id)
+		row.append(q.subissue_id)
+		row.append(q.location.split(',')[0])
+		row.append(q.location.split(',')[1])
+		row.append(q.zip_code)
+		allData.append([float(x) for x in row])
+		row = []
+
+	o_dataset = np.array(dataset)
+
+	##numpy columns
+	X = o_dataset[:,0]
+	Y = o_dataset[:,1]
+	Z = o_dataset[:,2]
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection='3d')
+	nb_clusters = 3
+	colors = ["g","r","b"]
+	kmeans = KMeans(n_clusters=nb_clusters)
+	kmeans.fit(o_dataset)
+
+	centriods = kmeans.cluster_centers_
+	labels = kmeans.labels_
+
+	clusters = []
+	clusters_issues = []
+	for c in range(nb_clusters):
+		##only for plotting
+		clusters.append([])
+		##for json
+		clusters_issues.append([])
+
+	for c in range(nb_clusters):
+		for i in range(len(o_dataset)):
+			if labels[i]==c:
+				clusters[c].append(o_dataset[i])
+				clusters_issues[c].append(allData[i])
+
+	resultDict = {}
+	counter = 0
+	for cluster in clusters_issues:
+		df = pd.DataFrame(cluster, columns=header,index=['row_{0}'.format(x) for x in range(len(cluster))])
+		df = df.transpose()
+		jsonObject = df.to_dict()
+		resultDict["cluster{0}".format(counter)] = jsonObject
+		counter+=1
+
+	out_json = json.dumps(resultDict)
+	print(out_json)
+
+	counter = 0
+	for cluster in clusters:
+		print(cluster)
+
+	for cluster in clusters:
+		data = np.array(cluster)
+		if cluster != []:
+			X = data[:,0]
+			Y = data[:,1]
+			Z = data[:,2]
+		ax.scatter(X, Y, Z, c=colors[counter], marker='o')
+		counter+=1
+
+	ax.scatter(centriods[:,0],centriods[:,1],centriods[:,2], c = 'black', marker='x')
+
 	form = QueryForm()
+
 	return render_template('home/admin_dashboard.html',form = form, queries = queries, title="Admin Dashboard")
 
 

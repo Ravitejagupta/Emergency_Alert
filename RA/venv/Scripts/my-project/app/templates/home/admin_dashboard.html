@@ -1,3 +1,30 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <!-- <script>
+  document.getElementById("verify").onclick = function fun()
+    {
+     alert("Hi");
+     $(this).css('background', 'red');
+    }
+  </script> -->
+<script>
+  document.getElementById("verify").onclick = function fun()
+    {
+     alert("hello");
+     //validation code to see State field is mandatory.
+    }
+
+    function f1(obj)
+    {
+       $(obj).css('background', 'green');
+    }
+    </script>
+</head>
+<body>
+
+
 {% import "bootstrap/utils.html" as utils %}
 {% extends "base.html" %}
 {% block title %}Admin Dashboard{% endblock %}
@@ -33,7 +60,7 @@
               </thead>
               <tbody>
               {% for query in queries %}
-                    <tr>
+                    <tr id = "row">
                       <td> {{ query.employee.first_name }} {{ query.employee.last_name }}</td>
                       <td>
                           {{ query.issue.name }}
@@ -53,9 +80,9 @@
                       <td>
                           {{ query.zip_code }}
                       </td>
-                      <td>
+                      <td id = "verify" onclick="f1(this)">
                           <a href="{{ url_for('home.delete_query', id=query.id) }}">
-                            <i class="fa fa-user-plus"></i> Delete</a> / <a href="{{ url_for('home.verify_query', id=query.id) }}"><i class="fa fa-user-plus"></i> Verify</a>
+                            <i class="fa fa-user-plus" onclick = "f1(getElementById("row"))"></i> Delete</a> / <a href="{{ url_for('home.verify_query', id=query.id) }}"><i class="fa fa-user-plus"></i> Verify</a>
                         </td>
                     </tr>
 
@@ -70,3 +97,5 @@
   </div>
 </div>
 {% endblock %}
+</body>
+</html>

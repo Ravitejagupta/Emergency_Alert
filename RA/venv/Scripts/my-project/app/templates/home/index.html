@@ -1,3 +1,4 @@
+{% import "bootstrap/utils.html" as utils %}
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block body %}
@@ -5,6 +6,9 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
+              <br/>
+              {{ utils.flashed_messages() }}
+              <br/>
                 <div class="intro-message">
                       <h1>Ultimate Rescue Team</h1>
                       <h3>The saviours !!</h3>
