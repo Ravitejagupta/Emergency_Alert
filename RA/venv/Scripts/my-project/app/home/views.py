@@ -3,6 +3,7 @@ import pyodbc
 import json
 import collections
 import requests
+import ast
 import json
 import phonenumbers
 from phonenumbers import carrier
@@ -25,6 +26,8 @@ from ..models import Employee, Issue, SubIssue, Query
 
 firebaseget = firebase.FirebaseApplication('https://eager-621db.firebaseio.com/Reports/')
 firebasepost = firebase.FirebaseApplication('https://eager-621db.firebaseio.com/VerifiedReports/')
+
+d = {}
 
 @home.route('/')
 def homepage():
@@ -75,7 +78,7 @@ def select_sub_issue(id):
 		lon = j['longitude']
 		location = str(lat) + "," + str(lon)
 		phone = form.phone.data
-		if(carrier._is_mobile(number_type(phonenumbers.parse(phone)))):
+		if(carrier._is_mobile(number_type(phonenumbers.parse(phone)))) and phone !='':
 			query = Query(employee_id=current_user.id, issue_id =id, subissue_id = subissue_id, additional_info = additional_info, location = location, phone = phone, zip_code = j['zip_code'])
 			try:
 				db.session.add(query)
@@ -85,18 +88,20 @@ def select_sub_issue(id):
 				flash('Error: Query already exists.')
 		else:
 			flash('Please enter a valid contact number')
+			return redirect(url_for('home.select_sub_issue', id=id))
+
 
 		return redirect(url_for('home.list_user_issues'))
 
 	return render_template('home/selectsubissue.html',subissues = subissues,form = form, title = "Select Sub Issue")
 
 
-@home.route('/admin/dashboard')
+@home.route('/admin/dashboard', methods=['GET', 'POST'])
 @login_required
 def admin_dashboard():
 	dataset = []
 	allData = []
-	header = ['User_id', 'Issue_id', 'latitude', 'longitude', 'zip_code']
+	header = ['User', 'Issue', 'SubIssue', 'additional_info', 'Phone', 'latitude', 'longitude', 'zip_code']
 	row = []
 	queries = Query.query.all()
 	for q in queries:
@@ -107,12 +112,15 @@ def admin_dashboard():
 		row = []
 
 	for q in queries:
-		row.append(q.issue_id)
-		row.append(q.subissue_id)
+		row.append(q.employee.username)
+		row.append(q.issue.name)
+		row.append(q.subissue.name)
+		row.append(q.additional_info)
+		row.append(q.phone)
 		row.append(q.location.split(',')[0])
 		row.append(q.location.split(',')[1])
 		row.append(q.zip_code)
-		allData.append([float(x) for x in row])
+		allData.append([x for x in row])
 		row = []
 
 	o_dataset = np.array(dataset)
@@ -155,12 +163,43 @@ def admin_dashboard():
 		counter+=1
 
 	out_json = json.dumps(resultDict)
-	print(out_json)
+	get = firebaseget.get('/ClusteredData',None)
+
+	if(get is None):
+		post = firebasepost.post('/ClusteredData',ast.literal_eval(out_json))
+
+	count=0
+	for i in ast.literal_eval(out_json):
+		if ast.literal_eval(out_json)[i] != {}:
+			count+=1
+	cluster_size = len(ast.literal_eval(out_json)['cluster0'])
+
+	json_dict = ast.literal_eval(out_json)
+
+	for i in range(c):
+		json_dict['cluster{}'.format(i)]['User'] = ""
+		json_dict['cluster{}'.format(i)]['Issue'] = ""
+		json_dict['cluster{}'.format(i)]['SubIssue'] = ""
+		json_dict['cluster{}'.format(i)]['additional_info'] = ""
+		for j in range(3):
+			json_dict['cluster{}'.format(i)]['User'] +=  json_dict['cluster{}'.format(i)]['row_{}'.format(j)]['User'] + ', '
+			json_dict['cluster{}'.format(i)]['Issue'] +=  json_dict['cluster{}'.format(i)]['row_{}'.format(j)]['Issue'] + ', '
+			json_dict['cluster{}'.format(i)]['SubIssue'] +=  json_dict['cluster{}'.format(i)]['row_{}'.format(j)]['SubIssue'] + ', '
+			json_dict['cluster{}'.format(i)]['additional_info'] +=  json_dict['cluster{}'.format(i)]['row_{}'.format(j)]['additional_info'] + ', '
+
+	final_json = {}
+	for i in range(c):
+		row_dict = {}
+		row_dict['User'] = json_dict['cluster{}'.format(i)]['User']
+		row_dict['Issue'] = json_dict['cluster{}'.format(i)]['Issue']
+		row_dict['SubIssue'] = json_dict['cluster{}'.format(i)]['SubIssue']
+		row_dict['additional_info'] = json_dict['cluster{}'.format(i)]['additional_info']
+		row_dict['location'] = json_dict['cluster{}'.format(i)]['row_0']['latitude'] + ',' + json_dict['cluster{}'.format(i)]['row_0']['longitude']
+		row_dict['phone'] = json_dict['cluster{}'.format(i)]['row_0']['Phone']
+		row_dict['zip_code'] = json_dict['cluster{}'.format(i)]['row_0']['zip_code']
+		final_json['cluster{}'.format(i)] = row_dict
 
 	counter = 0
-	for cluster in clusters:
-		print(cluster)
-
 	for cluster in clusters:
 		data = np.array(cluster)
 		if cluster != []:
@@ -172,9 +211,10 @@ def admin_dashboard():
 
 	ax.scatter(centriods[:,0],centriods[:,1],centriods[:,2], c = 'black', marker='x')
 
+
 	form = QueryForm()
 
-	return render_template('home/admin_dashboard.html',form = form, queries = queries, title="Admin Dashboard")
+	return render_template('home/admin_dashboard.html',form = form, queries = queries, title="Admin Dashboard",content = list(final_json.values()))
 
 
 #delete a query
@@ -220,3 +260,9 @@ def subscribe():
 	flash('Subscribed successfully')
 	post = firebasepost.post('/notificationRequests',{'user':current_user.username,'zip code':j['zip_code']})
 	return render_template('home/dashboard.html', title="Dashboard")
+
+
+@home.route('/admin/test', methods=['GET', 'POST'])
+def index():
+	content = {1:22,4:1}
+	return render_template('home/test.html',content = content)
